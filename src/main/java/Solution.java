@@ -3,29 +3,55 @@ import java.util.Map;
 
 public class Solution {
     public int minOperations(int[] nums, int x) {
-        Map<String, Integer> memo = new HashMap<>();
-        int answer = dfs(nums, x, 0, nums.length - 1, memo);
+        int sum = 0;
 
-        return answer > nums.length ? -1 : answer;
-    }
-    private int dfs(int[] nums, int x, int left, int right, Map<String, Integer> memo){
-        if(x == 0){
-            return 0;
+        for (int num :nums) {
+            sum += num;
         }
-        if(memo.containsKey(x + " " + left + " " + right)){
-            return memo.get(x + " " + left + " " + right);
+        if(sum < x){
+            return  -1;
         }
-        if(x < 0 || left > nums.length - 1 || right < 0 || left > right){
-            return Integer.MAX_VALUE / 2;
+        if(sum == x){
+            return nums.length;
         }
+        int maxSubArraySum = sum - x;
+        int left = 0;
+        int right = 0;
+        int currentSum = nums[0];
+        int maxLength = -1;
 
+        while (right != nums.length -1){
+            if(currentSum == maxSubArraySum){
+                maxLength = Math.max(maxLength, right - left + 1);
+            }
+            if(currentSum > maxSubArraySum && left == right){
+                currentSum -= nums[left];
+                left++;
+                right++;
+                if(right < nums.length){
+                    currentSum += nums[right];
+                }else break;
+            }
+            if(currentSum <= maxSubArraySum){
+                right++;
+                currentSum += nums[right];
+            }else if(left < right){
+                currentSum -= nums[left];
+                left++;
 
-        int takeLeft = 1 + dfs(nums, x - nums[left], left + 1, right, memo);
-        int takeRight = 1 + dfs(nums, x - nums[right], left, right - 1, memo);
+            }
+            if(right == nums.length - 1 && currentSum > maxSubArraySum){
+                while (currentSum > maxSubArraySum && left <= right){
+                    currentSum -= nums[left];
+                    left++;
+                }
+            }
+            if(currentSum == maxSubArraySum){
+                maxLength = Math.max(maxLength, right - left + 1);
+            }
 
-        int result = Math.min(takeLeft, takeRight);
-        memo.put(x + " " + left + " " + right, result);
-        return result;
+        }
+        return maxLength == -1 ? -1 : nums.length - maxLength;
 
     }
 }
